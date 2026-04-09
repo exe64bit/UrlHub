@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #111118;
+            --surface2: #18181f;
+            --border: #2a2a38;
+            --accent: #7c6aff;
+            --accent2: #ff6a9b;
+            --accent3: #6affda;
+            --text: #e8e8f0;
+            --muted: #6b6b80;
+            --danger: #ff4f6a;
+            --warn: #ffb347;
+        }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(124,106,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124,106,255,0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 48px 24px 100px;
+        }
+
+        /* ── Header ── */
+        header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-left .greeting {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+
+        .header-left h1 {
+            font-size: clamp(26px, 5vw, 40px);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header-badge {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            padding: 7px 18px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Syne', sans-serif;
+            text-decoration: none;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .add-btn:hover { border-color: var(--accent); background: rgba(124,106,255,0.08); }
+        .add-btn svg { width: 14px; height: 14px; }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .search-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-wrap .s-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            pointer-events: none;
+            display: flex;
+        }
+        .search-wrap .s-icon svg { width: 15px; height: 15px; }
+
+        #search {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 36px 11px 38px;
+            font-size: 14px;
+            font-family: 'Syne', sans-serif;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        #search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,106,255,0.13); }
+        #search::placeholder { color: var(--muted); }
+
+        #clearSearch {
+            position: absolute;
+            right: 10px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 4px;
+            display: none;
+            align-items: center;
+        }
+        #clearSearch.show { display: flex; }
+        #clearSearch:hover { color: var(--text); }
+        #clearSearch svg { width: 14px; height: 14px; }
+
+        .filter-wrap { position: relative; }
+        .filter-wrap::after {
+            content: '';
+            position: absolute;
+            right: 11px; top: 50%;
+            transform: translateY(-50%);
+            width: 0; height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid var(--muted);
+            pointer-events: none;
+        }
+
+        #filterSelect {
+            appearance: none;
+            -webkit-appearance: none;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 30px 11px 13px;
+            font-size: 13px;
+            font-family: 'DM Mono', monospace;
+            color: var(--text);
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        #filterSelect:focus { border-color: var(--accent); }
+        #filterSelect option { background: var(--surface2); }
+
+        .tb-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Syne', sans-serif;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .tb-btn svg { width: 13px; height: 13px; }
+
+        .tb-btn-apply {
+            background: rgba(124,106,255,0.10);
+            color: var(--accent);
+            border-color: rgba(124,106,255,0.25);
+        }
+        .tb-btn-apply:hover { background: rgba(124,106,255,0.20); border-color: var(--accent); }
+
+        .tb-btn-clear {
+            background: var(--surface);
+            color: var(--muted);
+            border-color: var(--border);
+        }
+        .tb-btn-clear:hover { border-color: var(--muted); color: var(--text); }
+
+        /* ── Stats ── */
+        .stats-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .stat-chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 7px 13px;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .stat-chip span { color: var(--text); font-weight: 500; }
+        .stat-chip svg { width: 11px; height: 11px; }
+
+        /* ── Section label ── */
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-family: 'DM Mono', monospace;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+        /* ── Card ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 14px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            animation: fadeUp 0.35s ease both;
+        }
+        .card:nth-child(1) { animation-delay:.04s; }
+        .card:nth-child(2) { animation-delay:.08s; }
+        .card:nth-child(3) { animation-delay:.12s; }
+        .card:nth-child(4) { animation-delay:.16s; }
+        .card:nth-child(5) { animation-delay:.20s; }
+
+        @keyframes fadeUp {
+            from { opacity:0; transform:translateY(14px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+
+        .card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,106,255,0.10); }
+        .card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent),var(--accent2)); opacity:0; transition:opacity 0.2s; }
+        .card:hover::before { opacity:1; }
+
+        .card-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+
+        .card-description { font-size:16px; font-weight:700; color:var(--text); line-height:1.3; }
+
+        .importance-badge { font-family:'DM Mono',monospace; font-size:11px; font-weight:500; padding:4px 12px; border-radius:50px; white-space:nowrap; flex-shrink:0; }
+        .importance-high    { background:rgba(255,79,106,0.13);  color:var(--danger);  border:1px solid rgba(255,79,106,0.28); }
+        .importance-medium  { background:rgba(255,179,71,0.13);  color:var(--warn);    border:1px solid rgba(255,179,71,0.28); }
+        .importance-low     { background:rgba(106,255,218,0.10); color:var(--accent3); border:1px solid rgba(106,255,218,0.22); }
+        .importance-general { background:rgba(124,106,255,0.10); color:var(--accent);  border:1px solid rgba(124,106,255,0.22); }
+
+        .url-group { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+
+        .url-row { display:flex; align-items:center; gap:10px; background:var(--surface2); border:1px solid var(--border); border-radius:9px; padding:9px 13px; min-width:0; }
+
+        .url-label { font-family:'DM Mono',monospace; font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); flex-shrink:0; width:46px; }
+
+        .url-text { font-family:'DM Mono',monospace; font-size:12px; color:var(--accent3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0; }
+        .url-text a { color:inherit; text-decoration:none; }
+        .url-text a:hover { text-decoration:underline; }
+
+        .copy-btn { background:transparent; border:1px solid var(--border); color:var(--muted); border-radius:6px; padding:4px 9px; cursor:pointer; font-size:11px; font-family:'DM Mono',monospace; font-weight:500; display:flex; align-items:center; gap:4px; transition:all 0.15s; flex-shrink:0; }
+        .copy-btn:hover { background:rgba(124,106,255,0.10); border-color:var(--accent); color:var(--accent); }
+        .copy-btn.copied { background:rgba(106,255,218,0.10); border-color:var(--accent3); color:var(--accent3); }
+        .copy-btn svg { width:11px; height:11px; }
+
+        .meta-row { display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+
+        .meta-chip { background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:5px 12px; font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); display:flex; align-items:center; gap:5px; }
+        .meta-chip span { color:var(--text); font-weight:500; }
+        .meta-chip svg { width:11px; height:11px; }
+
+        .card-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+
+        .btn { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; font-family:'Syne',sans-serif; cursor:pointer; text-decoration:none; border:1px solid transparent; transition:all 0.15s; }
+        .btn svg { width:13px; height:13px; }
+
+        .btn-edit { background:rgba(124,106,255,0.10); color:var(--accent); border-color:rgba(124,106,255,0.25); }
+        .btn-edit:hover { background:rgba(124,106,255,0.20); border-color:var(--accent); }
+
+        .btn-delete { background:rgba(255,79,106,0.08); color:var(--danger); border-color:rgba(255,79,106,0.22); }
+        .btn-delete:hover { background:rgba(255,79,106,0.18); border-color:var(--danger); }
+
+        .delete-form { display:inline; }
+
+        /* ── States ── */
+        .empty-state { text-align:center; padding:64px 24px; color:var(--muted); }
+        .empty-state .icon { font-size:44px; margin-bottom:14px; opacity:.4; }
+        .empty-state h3 { font-size:17px; font-weight:700; color:var(--text); margin-bottom:6px; }
+        .empty-state p { font-size:13px; }
+
+        #noResults { display:none; text-align:center; padding:64px 24px; color:var(--muted); }
+        #noResults .icon { font-size:40px; margin-bottom:14px; opacity:.4; }
+        #noResults h3 { font-size:17px; font-weight:700; color:var(--text); margin-bottom:6px; }
+        #noResults p { font-size:13px; }
+
+        /* Toast */
+        #toast { position:fixed; bottom:28px; right:28px; background:var(--surface2); border:1px solid var(--accent3); color:var(--accent3); padding:11px 18px; border-radius:10px; font-size:12px; font-family:'DM Mono',monospace; font-weight:500; opacity:0; transform:translateY(10px); transition:all 0.22s; pointer-events:none; z-index:999; display:flex; align-items:center; gap:7px; }
+        #toast.show { opacity:1; transform:translateY(0); }
+        #toast svg { width:13px; height:13px; }
+
+        /* Search highlight */
+        mark.hl { background:rgba(124,106,255,0.28); color:var(--accent); border-radius:2px; padding:0 1px; font-style:normal; }
+
+        /* Active filter indicator */
+        .filter-active { border-color: var(--accent) !important; box-shadow: 0 0 0 2px rgba(124,106,255,0.15); }
+
+        @media (max-width:600px) {
+            .card { padding:16px 14px; }
+            .toolbar { gap:8px; }
+            .tb-btn span { display:none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <p class="greeting">Welcome back</p>
+            <h1><%= user.name %></h1>
+        </div>
+        <div class="header-right">
+            <div class="header-badge">⚡ Dashboard</div>
+            <a href="/add" class="add-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Link
+            </a>
+        </div>
+    </header>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="search-wrap">
+            <span class="s-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" id="search" placeholder="Search description or URL…" oninput="onSearchInput(this)" autocomplete="off">
+            <button id="clearSearch" onclick="clearSearch()" title="Clear">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+
+        <div class="filter-wrap">
+            <select id="filterSelect" onchange="applyFilter()">
+                <option value="All">All</option>
+                <option value="General">General</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+        <div class="stat-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Total Links <span id="totalCount"><%= datas.length %></span>
+        </div>
+        <div class="stat-chip" id="visibleStat" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Showing <span id="visibleCount">0</span>
+        </div>
+        <div class="stat-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg>
+            Total Clicks <span><%= datas.reduce(function(s,d){ return s+(d.clicks||0); }, 0) %></span>
+        </div>
+    </div>
+
+    <!-- Section label -->
+    <p class="section-label">Your Links</p>
+
+    <!-- Cards -->
+    <div id="cardList">
+        <% if (datas && datas.length > 0) { %>
+            <% datas.forEach(function(data) { %>
+                <%
+                    var imp = (data.importance || '').toString().toLowerCase();
+                    var impClass = 'importance-general';
+                    if      (imp === 'high')   impClass = 'importance-high';
+                    else if (imp === 'medium') impClass = 'importance-medium';
+                    else if (imp === 'low')    impClass = 'importance-low';
+                %>
+                <div class="card"
+                     data-desc="<%= data.description.toLowerCase() %>"
+                     data-url="<%= data.url.toLowerCase() %>"
+                     data-importance="<%= data.importance %>">
+
+                    <div class="card-header">
+                        <p class="card-description"><%= data.description %></p>
+                        <span class="importance-badge <%= impClass %>"><%= data.importance %></span>
+                    </div>
+
+                    <div class="url-group">
+                        <div class="url-row">
+                            <span class="url-label">Origin</span>
+                            <span class="url-text"><%= data.url %></span>
+                            <button class="copy-btn" onclick="copyText('<%= data.url %>', this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy
+                            </button>
+                        </div>
+                        <div class="url-row">
+                            <span class="url-label">Short</span>
+                            <span class="url-text">
+                                <a href="/<%= data.url_id %>" target="_blank"><%= origianl_url %>/<%= data.url_id %></a>
+                            </span>
+                            <button class="copy-btn" onclick="copyText('<%= origianl_url %>/<%= data.url_id %>', this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="meta-row">
+                        <div class="meta-chip">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg>
+                            Clicks <span><%= data.clicks %></span>
+                        </div>
+                        <div class="meta-chip">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                            ID <span><%= data.url_id %></span>
+                        </div>
+                    </div>
+
+                    <div class="card-actions">
+                        <a href="/edit/<%= data.url_id %>" class="btn btn-edit">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Edit
+                        </a>
+                        <form class="delete-form" action="/delete/<%= data.url_id %>" method="post" onsubmit="return confirm('Delete this link?')">
+                            <button type="submit" class="btn btn-delete">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div class="empty-state">
+                <div class="icon">🔗</div>
+                <h3>No links yet</h3>
+                <p>Hit <strong>Add Link</strong> to get started.</p>
+            </div>
+        <% } %>
+    </div>
+
+    <div id="noResults">
+        <div class="icon">🔍</div>
+        <h3>No results found</h3>
+        <p>Try a different search term or clear the filter.</p>
+    </div>
+
+</div>
+
+<!-- Toast -->
+<div id="toast">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    Copied!
+</div>
+
+<script>
+    let activeFilter = 'All';
+    let activeSearch = '';
+
+    function onSearchInput(inp) {
+        activeSearch = inp.value.trim().toLowerCase();
+        document.getElementById('clearSearch').classList.toggle('show', activeSearch.length > 0);
+        runFilter();
+    }
+
+    function clearSearch() {
+        document.getElementById('search').value = '';
+        activeSearch = '';
+        document.getElementById('clearSearch').classList.remove('show');
+        runFilter();
+    }
+
+    function applyFilter() {
+        activeFilter = document.getElementById('filterSelect').value;
+        const sel = document.getElementById('filterSelect');
+        sel.classList.toggle('filter-active', activeFilter !== 'All');
+        runFilter();
+    }
+
+    function clearAll() {
+        activeFilter = 'All';
+        activeSearch = '';
+        document.getElementById('search').value = '';
+        document.getElementById('filterSelect').value = 'All';
+        document.getElementById('filterSelect').classList.remove('filter-active');
+        document.getElementById('clearSearch').classList.remove('show');
+        runFilter();
+    }
+
+    function runFilter() {
+        const cards = document.querySelectorAll('#cardList .card');
+        let visible = 0;
+
+        cards.forEach(function(card) {
+            const desc = card.dataset.desc || '';
+            const url  = card.dataset.url  || '';
+            const imp  = card.dataset.importance || '';
+
+            const matchSearch = !activeSearch || desc.includes(activeSearch) || url.includes(activeSearch);
+            const matchFilter = activeFilter === 'All' || imp === activeFilter;
+
+            if (matchSearch && matchFilter) {
+                card.style.display = '';
+                visible++;
+                applyHighlight(card, activeSearch);
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        document.getElementById('noResults').style.display =
+            (visible === 0 && cards.length > 0) ? 'block' : 'none';
+
+        const vs = document.getElementById('visibleStat');
+        if (activeSearch || activeFilter !== 'All') {
+            vs.style.display = 'flex';
+            document.getElementById('visibleCount').textContent = visible;
+        } else {
+            vs.style.display = 'none';
+        }
+    }
+
+    function applyHighlight(card, query) {
+        const el = card.querySelector('.card-description');
+        if (!el) return;
+        const raw = el.textContent;
+        if (!query) { el.innerHTML = esc(raw); return; }
+        el.innerHTML = esc(raw).replace(new RegExp('(' + escRe(query) + ')', 'gi'),
+            '<mark class="hl">$1</mark>');
+    }
+
+    function esc(s)   { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+
+    function copyText(text, btn) {
+        navigator.clipboard.writeText(text).then(function() {
+            var orig = btn.innerHTML;
+            btn.classList.add('copied');
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>Done';
+            showToast();
+            setTimeout(function() { btn.classList.remove('copied'); btn.innerHTML = orig; }, 2000);
+        }).catch(function() {
+            var ta = document.createElement('textarea');
+            ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+            document.body.removeChild(ta); showToast();
+        });
+    }
+
+    function showToast() {
+        var t = document.getElementById('toast');
+        t.classList.add('show');
+        setTimeout(function() { t.classList.remove('show'); }, 2400);
+    }
+</script>
+
+</body>
+</html>

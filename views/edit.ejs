@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Link</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #111118;
+            --surface2: #18181f;
+            --border: #2a2a38;
+            --accent: #7c6aff;
+            --accent2: #ff6a9b;
+            --accent3: #6affda;
+            --text: #e8e8f0;
+            --muted: #6b6b80;
+            --danger: #ff4f6a;
+            --warn: #ffb347;
+        }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 24px;
+            overflow-x: hidden;
+        }
+
+        /* Grid */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(124,106,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124,106,255,0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glow blobs */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .blob-1 {
+            width: 420px; height: 420px;
+            top: -140px; left: 50%;
+            transform: translateX(-50%);
+            background: radial-gradient(circle, rgba(255,106,155,0.09) 0%, transparent 70%);
+        }
+        .blob-2 {
+            width: 320px; height: 320px;
+            bottom: -100px; right: -60px;
+            background: radial-gradient(circle, rgba(124,106,255,0.08) 0%, transparent 70%);
+        }
+
+        /* Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 460px;
+            animation: fadeUp 0.45s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Back link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-family: 'DM Mono', monospace;
+            margin-bottom: 28px;
+            transition: color 0.15s;
+        }
+        .back-link:hover { color: var(--text); }
+        .back-link svg { width: 14px; height: 14px; }
+
+        /* Card */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 36px 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent2), var(--accent));
+        }
+
+        /* Card header */
+        .card-header { margin-bottom: 30px; }
+
+        .card-eyebrow {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent2);
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text) 0%, var(--accent2) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.15;
+        }
+
+        .card-subtitle {
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        /* URL preview pill */
+        .url-preview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 14px;
+            margin-bottom: 26px;
+        }
+
+        .url-preview .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--accent2);
+            flex-shrink: 0;
+            box-shadow: 0 0 8px rgba(255,106,155,0.5);
+        }
+
+        .url-preview span {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .url-preview strong {
+            color: var(--accent3);
+            font-weight: 400;
+        }
+
+        /* Field */
+        .field { margin-bottom: 20px; }
+
+        .field label {
+            display: block;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .field label .req { color: var(--accent2); margin-left: 2px; }
+
+        .input-wrap { position: relative; }
+
+        .input-wrap .icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .input-wrap .icon svg { width: 15px; height: 15px; }
+        .input-wrap:focus-within .icon { color: var(--accent2); }
+
+        input[type="text"] {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 13px 44px 13px 40px;
+            font-size: 14px;
+            font-family: 'Syne', sans-serif;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent2);
+            box-shadow: 0 0 0 3px rgba(255,106,155,0.13);
+            background: #1c1c26;
+        }
+
+        input::placeholder { color: var(--muted); }
+
+        /* Char count */
+        .char-count {
+            text-align: right;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 5px;
+            transition: color 0.2s;
+        }
+        .char-count.warn { color: var(--warn); }
+        .char-count.over { color: var(--danger); }
+
+        /* Importance pills */
+        .importance-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .pill {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 5px 14px;
+            border-radius: 50px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+            user-select: none;
+        }
+
+        .pill-general { background: rgba(124,106,255,0.10); color: var(--accent);  border-color: rgba(124,106,255,0.22); }
+        .pill-high    { background: rgba(255,79,106,0.10);  color: var(--danger);  border-color: rgba(255,79,106,0.22); }
+        .pill-medium  { background: rgba(255,179,71,0.10);  color: var(--warn);    border-color: rgba(255,179,71,0.22); }
+        .pill-low     { background: rgba(106,255,218,0.10); color: var(--accent3); border-color: rgba(106,255,218,0.22); }
+
+        .pill-general.active { background: rgba(124,106,255,0.26); border-color: var(--accent);  transform: scale(1.05); }
+        .pill-high.active    { background: rgba(255,79,106,0.26);  border-color: var(--danger);  transform: scale(1.05); }
+        .pill-medium.active  { background: rgba(255,179,71,0.26);  border-color: var(--warn);    transform: scale(1.05); }
+        .pill-low.active     { background: rgba(106,255,218,0.26); border-color: var(--accent3); transform: scale(1.05); }
+
+        /* Hidden select (still submits) */
+        select {
+            display: none;
+        }
+
+        /* Changed indicator */
+        .changed-badge {
+            display: none;
+            align-items: center;
+            gap: 5px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--warn);
+            background: rgba(255,179,71,0.10);
+            border: 1px solid rgba(255,179,71,0.25);
+            border-radius: 6px;
+            padding: 4px 10px;
+            margin-bottom: 20px;
+        }
+        .changed-badge.show { display: flex; }
+        .changed-badge svg { width: 12px; height: 12px; }
+
+        /* Divider */
+        .divider { height: 1px; background: var(--border); margin: 26px 0; }
+
+        /* Buttons row */
+        .btn-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Syne', sans-serif;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+        .btn-cancel {
+            background: var(--surface2);
+            color: var(--muted);
+            border-color: var(--border);
+            flex: 0 0 auto;
+            padding: 14px 20px;
+        }
+        .btn-cancel:hover { border-color: var(--muted); color: var(--text); }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            color: #fff;
+            box-shadow: 0 4px 18px rgba(255,106,155,0.25);
+            border: none;
+        }
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(255,106,155,0.38);
+            opacity: 0.92;
+        }
+        .btn-save:active { transform: translateY(0); }
+
+        @media (max-width: 480px) {
+            .card { padding: 26px 18px; }
+            .btn-row { flex-direction: column; }
+            .btn-cancel { order: 2; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="container">
+
+    <a href="/" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Back to Dashboard
+    </a>
+
+    <div class="card">
+
+        <div class="card-header">
+            <p class="card-eyebrow">✏️ Editing</p>
+            <h1 class="card-title">Edit Link</h1>
+            <p class="card-subtitle">Update the details for this shortened URL.</p>
+        </div>
+
+        <!-- URL preview -->
+        <div class="url-preview">
+            <span class="dot"></span>
+            <span>ID: <strong><%= url_data.url_id %></strong>&nbsp;&nbsp;·&nbsp;&nbsp;<%= url_data.url %></span>
+        </div>
+
+        <!-- Unsaved changes badge -->
+        <div class="changed-badge" id="changedBadge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Unsaved changes
+        </div>
+
+        <form action="/edit/<%= url_data.url_id %>" method="post" id="editForm">
+
+            <!-- Description -->
+            <div class="field">
+                <label for="description">Description <span class="req">*</span></label>
+                <div class="input-wrap">
+                    <span class="icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                    </span>
+                    <input
+                        type="text"
+                        id="description"
+                        name="description"
+                        placeholder="e.g. Company homepage"
+                        required
+                        maxlength="80"
+                        value="<%= url_data.description %>"
+                        autocomplete="off"
+                        oninput="updateChar(this, 'descCount', 80); markChanged()"
+                    >
+                </div>
+                <p class="char-count" id="descCount">0 / 80</p>
+            </div>
+
+            <!-- Importance -->
+            <div class="field">
+                <label>Importance <span class="req">*</span></label>
+                <select name="importance" id="importance" required>
+                    <option value="General">General</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+                <div class="importance-pills">
+                    <span class="pill pill-general" onclick="setPriority('General')">General</span>
+                    <span class="pill pill-high"    onclick="setPriority('High')">High</span>
+                    <span class="pill pill-medium"  onclick="setPriority('Medium')">Medium</span>
+                    <span class="pill pill-low"     onclick="setPriority('Low')">Low</span>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="btn-row">
+                <a href="/" class="btn btn-cancel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-save">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Changes
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    // --- Init from EJS data ---
+    const url_data = <%- JSON.stringify(url_data) %>;
+    const originalDesc = url_data.description || '';
+    const originalImp  = url_data.importance  || 'General';
+
+    // Set select + pills on load
+    document.getElementById('importance').value = originalImp;
+    syncPills(originalImp);
+
+    // Set char count on load
+    const descInput = document.getElementById('description');
+    updateChar(descInput, 'descCount', 80);
+
+    // --- Char counter ---
+    function updateChar(input, counterId, max) {
+        const len = input.value.length;
+        const el  = document.getElementById(counterId);
+        el.textContent = `${len} / ${max}`;
+        el.className = 'char-count' + (len >= max ? ' over' : len > max * 0.88 ? ' warn' : '');
+    }
+
+    // --- Importance pills ---
+    function setPriority(value) {
+        document.getElementById('importance').value = value;
+        syncPills(value);
+        markChanged();
+    }
+
+    function syncPills(value) {
+        document.querySelectorAll('.pill').forEach(p => {
+            p.classList.remove('active');
+            if (p.textContent.trim() === value) p.classList.add('active');
+        });
+    }
+
+    // --- Unsaved changes badge ---
+    function markChanged() {
+        const desc    = document.getElementById('description').value;
+        const imp     = document.getElementById('importance').value;
+        const changed = desc !== originalDesc || imp !== originalImp;
+        document.getElementById('changedBadge').classList.toggle('show', changed);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #111118;
+            --surface2: #18181f;
+            --border: #2a2a38;
+            --accent: #7c6aff;
+            --accent2: #ff6a9b;
+            --accent3: #6affda;
+            --text: #e8e8f0;
+            --muted: #6b6b80;
+            --danger: #ff4f6a;
+            --success: #6affda;
+        }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 24px;
+            overflow-x: hidden;
+        }
+
+        /* Grid */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(124,106,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124,106,255,0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glow blobs */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .blob-1 {
+            width: 460px; height: 460px;
+            top: -160px; right: -100px;
+            background: radial-gradient(circle, rgba(124,106,255,0.10) 0%, transparent 70%);
+        }
+        .blob-2 {
+            width: 380px; height: 380px;
+            bottom: -130px; left: -80px;
+            background: radial-gradient(circle, rgba(106,255,218,0.07) 0%, transparent 70%);
+        }
+
+        /* Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 420px;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Brand */
+        .brand {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .brand-icon {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, var(--accent3), var(--accent));
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 24px rgba(106,255,218,0.25);
+        }
+
+        .brand-icon svg { width: 26px; height: 26px; color: #0a0a0f; }
+
+        .brand h1 {
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text) 0%, var(--accent3) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand p {
+            margin-top: 6px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        /* Card */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 36px 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent3), var(--accent));
+        }
+
+        /* Field */
+        .field { margin-bottom: 18px; }
+
+        .field label {
+            display: block;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .input-wrap { position: relative; }
+
+        .input-wrap .icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .input-wrap .icon svg { width: 15px; height: 15px; }
+        .input-wrap:focus-within .icon { color: var(--accent); }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 13px 44px 13px 40px;
+            font-size: 14px;
+            font-family: 'Syne', sans-serif;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(124,106,255,0.15);
+            background: #1c1c26;
+        }
+
+        input.valid {
+            border-color: var(--accent3) !important;
+            box-shadow: 0 0 0 3px rgba(106,255,218,0.12) !important;
+        }
+
+        input.error {
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 3px rgba(255,79,106,0.13) !important;
+        }
+
+        input::placeholder { color: var(--muted); }
+
+        /* Validation icon inside input */
+        .status-icon {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .status-icon svg { width: 15px; height: 15px; }
+        .status-icon.show { opacity: 1; }
+        .status-icon.ok  { color: var(--accent3); }
+        .status-icon.bad { color: var(--danger); }
+
+        /* Password toggle */
+        .toggle-pw {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            transition: color 0.15s;
+        }
+        .toggle-pw:hover { color: var(--text); }
+        .toggle-pw svg { width: 15px; height: 15px; }
+
+        /* Error message */
+        .error-msg {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--danger);
+            margin-top: 5px;
+            display: none;
+        }
+        .error-msg.show { display: block; }
+
+        /* Password strength */
+        .strength-wrap {
+            margin-top: 8px;
+            display: none;
+        }
+        .strength-wrap.show { display: block; }
+
+        .strength-bar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 5px;
+        }
+
+        .strength-bar span {
+            flex: 1;
+            height: 3px;
+            border-radius: 4px;
+            background: var(--border);
+            transition: background 0.3s;
+        }
+
+        .strength-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        /* Steps indicator */
+        .steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 28px;
+        }
+
+        .step {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+
+        .step.done {
+            background: var(--accent3);
+            box-shadow: 0 0 8px rgba(106,255,218,0.5);
+        }
+
+        .step.active {
+            width: 24px;
+            border-radius: 4px;
+            background: var(--accent);
+        }
+
+        /* Divider */
+        .divider { height: 1px; background: var(--border); margin: 26px 0; }
+
+        /* Submit */
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent3), var(--accent));
+            color: #0a0a0f;
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 15px;
+            font-weight: 800;
+            font-family: 'Syne', sans-serif;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(106,255,218,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-submit::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.1);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .btn-submit:hover::after { opacity: 1; }
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 28px rgba(106,255,218,0.3);
+        }
+        .btn-submit:active { transform: translateY(0); }
+        .btn-submit svg { width: 16px; height: 16px; }
+
+        /* Login link */
+        .login-link {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .login-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.15s;
+        }
+        .login-link a:hover { color: var(--accent2); text-decoration: underline; }
+
+        @media (max-width: 480px) {
+            .card { padding: 28px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="container">
+
+    <!-- Brand -->
+    <div class="brand">
+        <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+        </div>
+        <h1>Create account</h1>
+        <p>Start shortening your links today</p>
+    </div>
+
+    <!-- Progress dots -->
+    <div class="steps">
+        <div class="step active" id="s1"></div>
+        <div class="step" id="s2"></div>
+        <div class="step" id="s3"></div>
+    </div>
+
+    <!-- Card -->
+    <div class="card">
+        <form action="/signup" method="post" id="signupForm" novalidate>
+
+            <!-- Name -->
+            <div class="field">
+                <label for="username">Full Name</label>
+                <div class="input-wrap">
+                    <span class="icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </span>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="John Doe"
+                        required
+                        autocomplete="name"
+                        oninput="liveValidateName(this)"
+                    >
+                    <span class="status-icon" id="nameStatus">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                </div>
+                <p class="error-msg" id="nameErr">Name must be at least 2 characters.</p>
+            </div>
+
+            <!-- Email -->
+            <div class="field">
+                <label for="email">Email</label>
+                <div class="input-wrap">
+                    <span class="icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                    </span>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="you@example.com"
+                        required
+                        autocomplete="email"
+                        oninput="liveValidateEmail(this)"
+                    >
+                    <span class="status-icon" id="emailStatus">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                </div>
+                <p class="error-msg" id="emailErr">Please enter a valid email address.</p>
+            </div>
+
+            <!-- Password -->
+            <div class="field">
+                <label for="password">Password</label>
+                <div class="input-wrap">
+                    <span class="icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </span>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="••••••••"
+                        required
+                        autocomplete="new-password"
+                        oninput="liveValidatePassword(this)"
+                    >
+                    <button type="button" class="toggle-pw" onclick="togglePw()" title="Show / hide password">
+                        <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Strength meter -->
+                <div class="strength-wrap" id="strengthWrap">
+                    <div class="strength-bar">
+                        <span id="sb1"></span>
+                        <span id="sb2"></span>
+                        <span id="sb3"></span>
+                        <span id="sb4"></span>
+                    </div>
+                    <p class="strength-label" id="strengthLabel">Strength: —</p>
+                </div>
+                <p class="error-msg" id="passErr">Password must be at least 6 characters.</p>
+            </div>
+
+            <div class="divider"></div>
+
+            <button type="submit" class="btn-submit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <line x1="19" y1="8" x2="19" y2="14"/>
+                    <line x1="22" y1="11" x2="16" y2="11"/>
+                </svg>
+                Create Account
+            </button>
+
+        </form>
+
+        <p class="login-link">
+            Already have an account? <a href="/login">Sign in</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    // --- Password toggle ---
+    function togglePw() {
+        const input = document.getElementById('password');
+        const icon  = document.getElementById('eyeIcon');
+        const hidden = input.type === 'password';
+        input.type = hidden ? 'text' : 'password';
+        icon.innerHTML = hidden
+            ? `<line x1="1" y1="1" x2="23" y2="23"/><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>`
+            : `<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>`;
+    }
+
+    // --- Progress dots ---
+    function updateSteps() {
+        const name  = document.getElementById('username').value.trim().length >= 2;
+        const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('email').value);
+        const pass  = document.getElementById('password').value.length >= 6;
+
+        const steps = [document.getElementById('s1'), document.getElementById('s2'), document.getElementById('s3')];
+        const filled = [name, email, pass];
+
+        steps.forEach((s, i) => {
+            s.classList.remove('active', 'done');
+            if (filled[i]) {
+                s.classList.add('done');
+            } else {
+                // first unfilled = active
+                const prev = filled.slice(0, i).every(Boolean);
+                if (prev) s.classList.add('active');
+            }
+        });
+    }
+
+    // --- Live validation helpers ---
+    function setFieldState(input, statusId, errId, isOk, errText) {
+        input.classList.remove('valid', 'error');
+        const status = document.getElementById(statusId);
+        const err    = document.getElementById(errId);
+
+        if (input.value === '') {
+            status.classList.remove('show', 'ok', 'bad');
+            err.classList.remove('show');
+            return;
+        }
+
+        if (isOk) {
+            input.classList.add('valid');
+            status.className = 'status-icon show ok';
+            status.querySelector('svg').innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+            err.classList.remove('show');
+        } else {
+            input.classList.add('error');
+            status.className = 'status-icon show bad';
+            status.querySelector('svg').innerHTML = '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+            if (errText) { document.getElementById(errId).textContent = errText; }
+            err.classList.add('show');
+        }
+        updateSteps();
+    }
+
+    function liveValidateName(input) {
+        setFieldState(input, 'nameStatus', 'nameErr', input.value.trim().length >= 2, 'Name must be at least 2 characters.');
+    }
+
+    function liveValidateEmail(input) {
+        const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value);
+        setFieldState(input, 'emailStatus', 'emailErr', ok, 'Please enter a valid email address.');
+    }
+
+    function liveValidatePassword(input) {
+        const val = input.value;
+        const wrap = document.getElementById('strengthWrap');
+
+        if (val.length === 0) {
+            wrap.classList.remove('show');
+            input.classList.remove('valid', 'error');
+            document.getElementById('passErr').classList.remove('show');
+            updateSteps();
+            return;
+        }
+
+        wrap.classList.add('show');
+
+        // Score
+        let score = 0;
+        if (val.length >= 6)  score++;
+        if (val.length >= 10) score++;
+        if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+        if (/[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val)) score++;
+
+        const colors  = ['#ff4f6a', '#ffb347', '#7c6aff', '#6affda'];
+        const labels  = ['Weak', 'Fair', 'Good', 'Strong'];
+        const bars    = ['sb1','sb2','sb3','sb4'];
+
+        bars.forEach((id, i) => {
+            document.getElementById(id).style.background = i < score ? colors[score - 1] : 'var(--border)';
+        });
+
+        document.getElementById('strengthLabel').textContent  = `Strength: ${labels[score - 1] || 'Weak'}`;
+        document.getElementById('strengthLabel').style.color   = colors[score - 1] || colors[0];
+
+        setFieldState(input, 'nameStatus', 'passErr', val.length >= 6, 'Password must be at least 6 characters.');
+        // Re-run without touching nameStatus
+        input.classList.remove('valid', 'error');
+        if (val.length >= 6) { input.classList.add('valid'); document.getElementById('passErr').classList.remove('show'); }
+        else                 { input.classList.add('error');  document.getElementById('passErr').classList.add('show'); }
+        updateSteps();
+    }
+
+    // --- Submit validation ---
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+        const name  = document.getElementById('username');
+        const email = document.getElementById('email');
+        const pass  = document.getElementById('password');
+        let valid = true;
+
+        if (name.value.trim().length < 2)                         { liveValidateName(name);   valid = false; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value))     { liveValidateEmail(email); valid = false; }
+        if (pass.value.length < 6)                                { pass.classList.add('error'); document.getElementById('passErr').classList.add('show'); valid = false; }
+
+        if (!valid) e.preventDefault();
+    });
+</script>
+
+</body>
+</html>
